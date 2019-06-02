@@ -1,7 +1,8 @@
-using System.Collections;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using IA.PathFinding;
+using IA.PathFinding.Methods;
 
 //La utilidad de Finder es Setear a un Walker su camino
 public class Finder : MonoBehaviour
@@ -9,6 +10,15 @@ public class Finder : MonoBehaviour
     public Nodo start;
     public Nodo End;
     public WalkerSimple walker;
+    public enum FindingMethod
+    {
+        BFS,
+        DFS,
+        Dijkstra,
+        AStar,
+        ThetaStar
+    }
+    public FindingMethod method;
 
     //FieldOfView
     //Nota: Esto es usado en FinderThetaStar
@@ -16,13 +26,30 @@ public class Finder : MonoBehaviour
     public LayerMask visibles = ~0;
 
     private void Start()
-    {      
+    {
+        List<Nodo> path = new List<Nodo>();
+
         //Aca va a cambiar el método.
-        var path = BFS.Run(start, satisfies, Expand);
-        var path = DFS.Run(start, satisfies, Expand);
-        var path = Dijkstra.Run(start, satisfies, ExpandWeighted);
-        var path = AStar.Run(start, satisfies, ExpandWeighted, heuristic);
-        var path = ThetaStar.Run(start, satisfies, ExpandWeighted, heuristic, insigth, cost);
+        switch (method)
+        {
+            case FindingMethod.BFS:
+                path = BFS.Run(start, satisfies, Expand);
+                break;
+            case FindingMethod.DFS:
+                path = DFS.Run(start, satisfies, Expand);
+                break;
+            case FindingMethod.Dijkstra:
+                path = Dijkstra.Run(start, satisfies, ExpandWeighted);
+                break;
+            case FindingMethod.AStar:
+                path = AStar.Run(start, satisfies, ExpandWeighted, heuristic);
+                break;
+            case FindingMethod.ThetaStar:
+                path = ThetaStar.Run(start, satisfies, ExpandWeighted, heuristic, insigth, cost);
+                break;
+            default:
+                break;
+        }
 
         // foreach (var nodo in path )
         // {
@@ -50,7 +77,7 @@ public class Finder : MonoBehaviour
 
         foreach (var item in n.neighbours)//lista de vecinos
         {
-            weightN.Add(Tuple.Create(item, Vector3.Distance(n.transform.position, item.transform.position)));//agrego una tupla por cada nodo, que contiene sus vecinos y costo tentativo
+            weightN.Add(Tuple.Create(item, Vector3.Distance(n.position, item.position)));//agrego una tupla por cada nodo, que contiene sus vecinos y costo tentativo
         }
 
         return weightN;
@@ -59,13 +86,13 @@ public class Finder : MonoBehaviour
     //Heuristic
     public float heuristic(Nodo n)
     {
-        float heuristicroute = Vector3.Distance(n.transform.position, End.transform.position);
+        float heuristicroute = Vector3.Distance(n.position, End.position);
 
         return heuristicroute;
     }
 
 
-   //ThetaStar
+   //ThetaStar Functions
 
    //Multi Line Of Sight
     public bool insigth(Nodo n, Nodo g)
@@ -74,12 +101,15 @@ public class Finder : MonoBehaviour
 
         RaycastHit hitInfo;
 
-        range = Vector3.Distance(g.transform.position, n.transform.position);
+        var range = Vector3.Distance(g.position, n.position);
         foreach (var item in n.neighbours)
         {
-            if (Physics.Raycast(n.transform.position, g.transform.position - n.transform.position, out hitInfo, range, visibles))
+            if (Physics.Raycast(n.position, g.position - n.position, out hitInfo, range, visibles))
             {
-                if (hitInfo.transform != g.transform) return false;
+                // TO DO: FIX THIS
+
+                //Esto da error porque el nodo no se puede comparar el uno con el otro usando transforms.
+                if (hitInfo.Equals(g)) return false;
             }
         }
         return true;
@@ -88,7 +118,7 @@ public class Finder : MonoBehaviour
 
     public float cost(Nodo n, Nodo g)
     {
-        float fathershipcost = Vector3.Distance(g.transform.position, n.transform.position);
+        float fathershipcost = Vector3.Distance(g.position, n.position);
 
         return fathershipcost;
     }

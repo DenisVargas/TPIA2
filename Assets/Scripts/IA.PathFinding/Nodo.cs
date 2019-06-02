@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace IA.PathFinding
 {
@@ -7,6 +8,8 @@ namespace IA.PathFinding
     public class Nodo
     {
         public List<Nodo> neighbours = new List<Nodo>();
+        public float instanceHashCode;
+        public Vector3 position;
     }
 }
 

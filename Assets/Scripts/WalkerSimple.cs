@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using IA.PathFinding;
 
 public class WalkerSimple : MonoBehaviour
 {
@@ -18,9 +19,9 @@ public class WalkerSimple : MonoBehaviour
         if (finished) return;
 
         var current = waypoints[currentIndex];
-        transform.position += (current.transform.position - transform.position).normalized * speed * Time.deltaTime;
+        transform.position += (current.position - transform.position).normalized * speed * Time.deltaTime;
 
-        if(Vector3.Distance(transform.position, current.transform.position) < threshold)
+        if(Vector3.Distance(transform.position, current.position) < threshold)
         {
             currentIndex++;
             if(currentIndex == waypoints.Count)
